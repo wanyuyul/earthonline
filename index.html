@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌍 地球Online - 300任务版 | 无删除记录</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui,'Segoe UI','Poppins','Roboto',sans-serif; }
+        body { min-height:100vh; background:linear-gradient(145deg,#1a3c2c 0%,#0e2a1f 100%); display:flex; justify-content:center; align-items:center; padding:20px; }
+        .game-container { width:100%; max-width:600px; background:rgba(30,20,15,0.75); backdrop-filter:blur(12px); border-radius:48px; box-shadow:0 25px 45px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1); border:1px solid rgba(255,215,150,0.3); overflow:hidden; }
+        .panel { padding:28px 24px 32px; }
+        .header { text-align:center; margin-bottom:28px; border-bottom:2px dashed #e9c891; padding-bottom:12px; display:flex; align-items:center; justify-content:center; gap:12px; }
+        .header h1 { font-size:2rem; letter-spacing:4px; background:linear-gradient(135deg,#FFE6B0,#D4AF37); background-clip:text; -webkit-background-clip:text; color:transparent; text-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        .earth-icon { width:48px; height:48px; cursor:pointer; filter:drop-shadow(0 0 4px #88ffaa); }
+        .score-area { background:#00000055; border-radius:80px; padding:8px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:baseline; backdrop-filter:blur(4px); border:1px solid #e9c89166; }
+        .score-label { font-weight:bold; color:#f7e5b5; font-size:1rem; }
+        .score-value { font-size:2rem; font-weight:800; color:#FFD966; text-shadow:0 0 6px #ffb347; line-height:1; }
+        .date-area { text-align:center; background:#2a241e88; border-radius:40px; padding:8px 12px; margin-bottom:20px; font-size:0.9rem; color:#e9cf9e; border:1px solid #b38948; backdrop-filter:blur(4px); }
+        .button-group { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin:24px 0 12px; }
+        .btn { border:none; background:#2f2a24e6; backdrop-filter:blur(4px); padding:12px 24px; border-radius:60px; font-weight:600; font-size:1rem; color:#f3e5c0; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 8px rgba(0,0,0,0.3); border:1px solid #ad8b4c; flex:1 0 auto; min-width:110px; }
+        .btn-primary { background:linear-gradient(135deg,#5f3b1c,#3e2a1a); color:#FFEFBF; border-color:#e4b363; }
+        .btn-primary:active { transform:scale(0.96); }
+        .btn-warning { background:#9b6a3c; border-color:#e7bc7e; }
+        .btn-danger { background:#8b3c2c; border-color:#d97c5a; }
+        .btn-back { background:#3e2b24; border-color:#bb8f63; }
+        .btn:active { transform:scale(0.96); }
+        .task-card { background:#201c16cc; border-radius:32px; padding:20px; margin:20px 0; text-align:center; border:1px solid #dbb46e; }
+        .task-text { font-size:1.6rem; font-weight:bold; color:#FFE2A4; margin:16px 0; }
+        .info-tip { color:#c2aa77; font-size:0.8rem; margin-top:12px; }
+        .achievement-list { max-height:460px; overflow-y:auto; margin:16px 0; padding-right:6px; }
+        .achievement-item { background:#1f1b15aa; margin:12px 0; padding:14px 18px; border-radius:30px; display:flex; justify-content:space-between; align-items:center; border:1px solid #b38948; flex-wrap:wrap; gap:8px; }
+        .achievement-info { flex:2; }
+        .achievement-name { font-size:1rem; font-weight:bold; color:#c2aa77; }
+        .achievement-desc { font-size:0.75rem; color:#b6a06c; }
+        .achievement-status { font-size:0.9rem; font-weight:bold; padding:4px 12px; border-radius:30px; background:#3d3228; color:#9e8a6b; }
+        .achievement-status.completed { background:#d9a13b; color:#2a241b; box-shadow:0 0 6px gold; }
+        .back-row { margin-top:24px; text-align:center; }
+        .login-box { text-align:center; }
+        .input-field { width:80%; padding:14px; margin:14px auto; border-radius:60px; border:none; background:#2b241d; color:#ffefcf; font-size:1rem; text-align:center; display:block; border:1px solid #c3a055; }
+        .error-msg { color:#ffaa88; background:#631e1e99; border-radius:40px; padding:8px; margin-top:12px; }
+        footer { font-size:0.7rem; text-align:center; color:#937e54; margin-top:16px; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); display:flex; justify-content:center; align-items:center; z-index:1000; opacity:0; transition:opacity 0.2s; }
+        .modal-overlay.active { opacity:1; }
+        .modal-container { background:#2c241cee; border:2px solid #e4bc7c; border-radius:48px; max-width:90%; width:500px; padding:24px 20px; text-align:center; box-shadow:0 20px 35px rgba(0,0,0,0.5); }
+        .modal-message { font-size:1.2rem; color:#FFE6B0; margin:16px 0; line-height:1.4; white-space:pre-wrap; }
+        .modal-buttons { display:flex; gap:16px; justify-content:center; margin-top:12px; }
+        .modal-btn { background:#d9a13b; border:none; padding:8px 20px; border-radius:40px; font-weight:bold; font-size:1rem; cursor:pointer; }
+        .modal-btn-cancel { background:#5a3e2a; color:#ffefcf; }
+        .modal-btn-confirm { background:#d9a13b; color:#2e241b; }
+        .modal-input { background:#3e2e22; border:1px solid #e4bc7c; border-radius:60px; padding:10px; margin:8px 0; width:90%; color:#fff0cf; text-align:center; }
+        hr { border-color:#dbbb74; margin:12px 0; }
+        .market-item { background:#1f1b15aa; margin:16px 0; padding:16px; border-radius:32px; border:1px solid #b38948; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+        .market-info { flex:2; }
+        .market-title { font-size:1.2rem; font-weight:bold; color:#ffdc97; }
+        .market-desc { font-size:0.8rem; color:#c2aa77; }
+        .market-cost { color:#FFD966; font-weight:bold; margin:8px 0; }
+        .market-btn { background:#6b4c2c; padding:8px 16px; border-radius:40px; border:none; color:#fff0c0; font-weight:bold; cursor:pointer; margin-left:8px; }
+        .market-btn-del { background:#6b2c2c; }
+        .add-reward-btn { background:#2c6b4c; width:100%; margin-top:12px; }
+        .history-table { width:100%; border-collapse:collapse; color:#f3e5c0; }
+        .history-table th, .history-table td { padding:8px; border-bottom:1px solid #b38948; text-align:left; }
+        .history-table th { background:#3d3228; color:#ffdc97; }
+        .market-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+        .btn-small { background:#6b4c2c; padding:6px 12px; font-size:0.8rem; border-radius:40px; border:none; color:#fff0c0; cursor:pointer; }
+    </style>
+</head>
+<body>
+<div class="game-container" id="appRoot"></div>
+
+<script>
+    // ======================= 生成300个任务 =======================
+    const taskTemplates = [
+        "🏃 完成晨跑{km}公里", "📖 阅读{book}书籍{min}分钟", "🍳 学习烹饪{food}", "🧹 整理{room}并断舍离", "✍️ 写一篇感恩日记",
+        "💧 全天喝够{water}升水", "🎧 听一期{theme}播客", "🤝 帮助一位{person}", "🧘 冥想{min}分钟", "🎨 完成一幅{type}画",
+        "🎵 学习一首{instrument}曲子", "💪 做{count}个俯卧撑", "📝 写一篇{topic}笔记", "🌿 照顾{plant}植物", "📺 观看{film}并写感想",
+        "🗣️ 练习{language}口语{min}分钟", "🧩 完成{pieces}块拼图", "📞 给{someone}打个电话", "🧹 清洗{things}", "🚶 散步{steps}步",
+        "🍎 吃一个水果", "💤 保证{sleep}小时睡眠", "📸 拍摄{photos}张照片", "🎮 玩{game}游戏{min}分钟", "🧮 做{math}道数学题",
+        "📦 整理{area}桌面", "🧵 缝补一件衣服", "📚 写{count}页日记", "🎭 练习一个表演", "🧪 做一个小实验"
+    ];
+    const replacements = {
+        km: [2,3,5,8], book: ["技术","文学","历史","哲学"], min: [15,30,45,60], food: ["番茄炒蛋","红烧肉","清蒸鱼","沙拉"],
+        room: ["卧室","客厅","书房","衣柜"], water: [1.5,2,2.5], theme: ["科技","商业","心理","健康"], person: ["邻居","同事","朋友","陌生人"],
+        type: ["素描","水彩","油画","简笔画"], instrument: ["吉他","钢琴","口琴","尤克里里"], count: [10,20,30,50], topic: ["今日总结","学习心得","旅行计划","未来目标"],
+        plant: ["绿萝","多肉","仙人掌","富贵竹"], film: ["纪录片","励志电影","喜剧","老电影"], language: ["英语","日语","法语","西班牙语"],
+        pieces: [100,200,500], someone: ["父母","好友","导师","自己"], things: ["鞋子","餐具","窗户","冰箱"], steps: [3000,5000,8000],
+        sleep: [7,8,9], photos: [5,10,15], game: ["益智","策略","休闲","棋牌"], math: [10,20,30], area: ["电脑桌面","书柜","抽屉","鞋柜"],
+        count2: [1,2,3]
+    };
+    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function generateTaskText(template) {
+        let text = template;
+        const matches = text.match(/\{(\w+)\}/g);
+        if (matches) {
+            for (let match of matches) {
+                const key = match.slice(1, -1);
+                let replacement = "?";
+                if (replacements[key]) replacement = getRandomItem(replacements[key]);
+                else if (key === "count") replacement = getRandomItem([5,10,15,20]);
+                else if (key === "water") replacement = getRandomItem([1,1.5,2,2.5]);
+                else replacement = "一些";
+                text = text.replace(match, replacement);
+            }
+        }
+        return text;
+    }
+    const TASKS_DB = [];
+    for (let i = 1; i <= 300; i++) {
+        const template = getRandomItem(taskTemplates);
+        const text = generateTaskText(template);
+        TASKS_DB.push({ id: i, text: text });
+    }
+
+    const ENCOURAGE_DB = [
+        "✨ 太棒了！地球意志为你点赞！ ✨",
+        "🎉 干得漂亮！继续前进吧冒险者！ 🎉",
+        "🌟 积分+1！你的传奇正在书写！ 🌟",
+        "💪 了不起！离大佬又近一步！ 💪",
+        "🍀 好运常在！任务完成度UP！ 🍀",
+        "🏆 地球online声望上升！ 🏆",
+        "🎈 超厉害！继续抽取新挑战！ 🎈"
+    ];
+    const ACHIEVEMENTS_DB = [
+        { id: 1, name: "🌱 初入地球", need: 1, desc: "累计完成1个任务" },
+        { id: 2, name: "⚡ 行动先锋", need: 5, desc: "累计完成5个任务" },
+        { id: 3, name: "📚 知识猎手", need: 10, desc: "累计完成10个任务" },
+        { id: 4, name: "🍳 厨房魔法师", need: 20, desc: "累计完成20个任务" },
+        { id: 5, name: "🧘 自律修行者", need: 30, desc: "累计完成30个任务" },
+        { id: 6, name: "🌟 闪耀达人", need: 50, desc: "累计完成50个任务" }
+    ];
+
+    // 全局状态
+    let state = {
+        isLoggedIn: false,
+        points: 0,
+        totalTasksCompleted: 0,
+        achievementBase: 0,
+        achievementsStatus: {},
+        dailyDrawCount: 0,
+        lastDrawDate: null,
+        dailyRerollCount: 0,
+        lastRerollDate: null,
+        dailyCompletedCount: 0,
+        lastCompletedDate: null,
+        currentTask: null,
+        customRewards: [],
+        purchaseHistory: []        // { id, name, cost, timeStr }
+    };
+
+    // ---------- 辅助函数 ----------
+    function getTodayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function getFullDateTimeStr() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth()+1).padStart(2,'0');
+        const day = String(d.getDate()).padStart(2,'0');
+        const hours = String(d.getHours()).padStart(2,'0');
+        const minutes = String(d.getMinutes()).padStart(2,'0');
+        const seconds = String(d.getSeconds()).padStart(2,'0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function loadFromStorage() {
+        state.points = parseInt(localStorage.getItem('earthonline_points') || '0');
+        state.totalTasksCompleted = parseInt(localStorage.getItem('earthonline_totalTasks') || '0');
+        state.achievementBase = parseInt(localStorage.getItem('earthonline_achievementBase') || '0');
+        const storedAchievements = localStorage.getItem('earthonline_achievements');
+        if (storedAchievements) {
+            state.achievementsStatus = JSON.parse(storedAchievements);
+        } else {
+            const init = {};
+            ACHIEVEMENTS_DB.forEach(ach => init[ach.id] = false);
+            state.achievementsStatus = init;
+        }
+        const today = getTodayStr();
+        const storedDrawCount = localStorage.getItem('earthonline_dailyDrawCount');
+        const storedDrawDate = localStorage.getItem('earthonline_lastDrawDate');
+        if (storedDrawDate === today && storedDrawCount !== null) {
+            state.dailyDrawCount = parseInt(storedDrawCount);
+        } else {
+            state.dailyDrawCount = 0;
+        }
+        state.lastDrawDate = today;
+
+        const storedRerollCount = localStorage.getItem('earthonline_dailyRerollCount');
+        const storedRerollDate = localStorage.getItem('earthonline_lastRerollDate');
+        if (storedRerollDate === today && storedRerollCount !== null) {
+            state.dailyRerollCount = parseInt(storedRerollCount);
+        } else {
+            state.dailyRerollCount = 0;
+        }
+        state.lastRerollDate = today;
+
+        const storedCompletedCount = localStorage.getItem('earthonline_dailyCompletedCount');
+        const storedCompletedDate = localStorage.getItem('earthonline_lastCompletedDate');
+        if (storedCompletedDate === today && storedCompletedCount !== null) {
+            state.dailyCompletedCount = parseInt(storedCompletedCount);
+        } else {
+            state.dailyCompletedCount = 0;
+        }
+        state.lastCompletedDate = today;
+
+        const storedCurrentTask = localStorage.getItem('earthonline_currentTask');
+        if (storedCurrentTask) {
+            try {
+                state.currentTask = JSON.parse(storedCurrentTask);
+            } catch(e) { state.currentTask = null; }
+        } else {
+            state.currentTask = null;
+        }
+
+        const storedRewards = localStorage.getItem('earthonline_customRewards');
+        if (storedRewards) {
+            state.customRewards = JSON.parse(storedRewards);
+        } else {
+            state.customRewards = [
+                { id: Date.now()+1, name: "🧋 奖励自己一杯奶茶", price: 5 },
+                { id: Date.now()+2, name: "🍖 奖励自己一顿烧烤", price: 15 }
+            ];
+        }
+        const storedHistory = localStorage.getItem('earthonline_purchaseHistory');
+        if (storedHistory) {
+            state.purchaseHistory = JSON.parse(storedHistory);
+            // 修复旧数据：确保每条记录都有 timeStr 字段
+            let needFix = false;
+            for (let rec of state.purchaseHistory) {
+                if (!rec.timeStr) {
+                    rec.timeStr = "未知时间";
+                    needFix = true;
+                }
+            }
+            if (needFix) saveToStorage();
+        } else {
+            state.purchaseHistory = [];
+        }
+    }
+
+    function saveToStorage() {
+        localStorage.setItem('earthonline_points', state.points);
+        localStorage.setItem('earthonline_totalTasks', state.totalTasksCompleted);
+        localStorage.setItem('earthonline_achievementBase', state.achievementBase);
+        localStorage.setItem('earthonline_achievements', JSON.stringify(state.achievementsStatus));
+        localStorage.setItem('earthonline_dailyDrawCount', state.dailyDrawCount);
+        localStorage.setItem('earthonline_lastDrawDate', state.lastDrawDate);
+        localStorage.setItem('earthonline_dailyRerollCount', state.dailyRerollCount);
+        localStorage.setItem('earthonline_lastRerollDate', state.lastRerollDate);
+        localStorage.setItem('earthonline_dailyCompletedCount', state.dailyCompletedCount);
+        localStorage.setItem('earthonline_lastCompletedDate', state.lastCompletedDate);
+        if (state.currentTask) {
+            localStorage.setItem('earthonline_currentTask', JSON.stringify(state.currentTask));
+        } else {
+            localStorage.removeItem('earthonline_currentTask');
+        }
+        localStorage.setItem('earthonline_customRewards', JSON.stringify(state.customRewards));
+        localStorage.setItem('earthonline_purchaseHistory', JSON.stringify(state.purchaseHistory));
+    }
+
+    function getEffectiveCompleted() {
+        return Math.max(0, state.totalTasksCompleted - state.achievementBase);
+    }
+
+    function checkAndUnlockAchievements() {
+        let anyNew = false;
+        const effective = getEffectiveCompleted();
+        for (let ach of ACHIEVEMENTS_DB) {
+            if (!state.achievementsStatus[ach.id] && effective >= ach.need) {
+                state.achievementsStatus[ach.id] = true;
+                anyNew = true;
+                setTimeout(() => {
+                    showModal(`🏆 新成就解锁！\n「${ach.name}」\n${ach.desc}`).then();
+                }, 100);
+            }
+        }
+        if (anyNew) {
+            saveToStorage();
+            if (window.currentView === 'achievement') renderAchievementView();
+            else if (window.currentView === 'market') renderMarketView();
+        }
+    }
+
+    function updateDailyCompleted() {
+        const today = getTodayStr();
+        if (state.lastCompletedDate !== today) {
+            state.dailyCompletedCount = 0;
+            state.lastCompletedDate = today;
+            saveToStorage();
+        }
+    }
+
+    let completingFlag = false;
+    async function completeCurrentTask() {
+        if (completingFlag) return false;
+        completingFlag = true;
+        try {
+            if (!state.currentTask) return false;
+            updateDailyCompleted();
+            if (state.dailyCompletedCount >= 2) {
+                await showModal("⚠️ 今日已完成2个任务，已达上限！无法继续完成。");
+                renderMainDashboard();
+                return false;
+            }
+            state.totalTasksCompleted += 1;
+            state.points += 1;
+            state.dailyCompletedCount += 1;
+            saveToStorage();
+            checkAndUnlockAchievements();
+            
+            const encourage = ENCOURAGE_DB[Math.floor(Math.random() * ENCOURAGE_DB.length)];
+            await showModal(`🎉 任务完成！\n\n${encourage}\n\n✨ 积分 +1 ✨ 当前积分: ${state.points}\n📊 总完成任务次数: ${state.totalTasksCompleted}`);
+            
+            const newTask = drawRandomTask();
+            state.currentTask = newTask;
+            saveToStorage();
+            
+            if (state.dailyCompletedCount >= 2) {
+                await showModal("今日任务额度已用完（2/2），系统将返回主界面。");
+                renderMainDashboard();
+                return true;
+            }
+            renderTaskView();
+            return true;
+        } finally {
+            completingFlag = false;
+        }
+    }
+
+    function drawRandomTask() {
+        if (TASKS_DB.length === 0) return null;
+        const idx = Math.floor(Math.random() * TASKS_DB.length);
+        return { ...TASKS_DB[idx] };
+    }
+
+    function ensureCurrentTask() {
+        if (!state.currentTask) {
+            state.currentTask = drawRandomTask();
+            saveToStorage();
+        }
+        return state.currentTask;
+    }
+
+    function resetAchievementsFree() {
+        state.achievementBase = state.totalTasksCompleted;
+        ACHIEVEMENTS_DB.forEach(ach => { state.achievementsStatus[ach.id] = false; });
+        saveToStorage();
+    }
+
+    function resetDailyQuota() {
+        const today = getTodayStr();
+        state.dailyDrawCount = 0;
+        state.lastDrawDate = today;
+        state.dailyCompletedCount = 0;
+        state.lastCompletedDate = today;
+        saveToStorage();
+    }
+
+    function updateDailyDrawCount() {
+        const today = getTodayStr();
+        if (state.lastDrawDate !== today) {
+            state.dailyDrawCount = 0;
+            state.lastDrawDate = today;
+            saveToStorage();
+        }
+    }
+    function canDrawToday() {
+        updateDailyDrawCount();
+        updateDailyCompleted();
+        return state.dailyDrawCount < 2 && state.dailyCompletedCount < 2;
+    }
+    function incrementDrawCount() {
+        if (!canDrawToday()) return false;
+        state.dailyDrawCount++;
+        saveToStorage();
+        return true;
+    }
+
+    function getOrDrawTask() {
+        if (state.currentTask) {
+            return state.currentTask;
+        }
+        if (!canDrawToday()) {
+            return null;
+        }
+        const newTask = drawRandomTask();
+        if (newTask) {
+            state.currentTask = newTask;
+            incrementDrawCount();
+            saveToStorage();
+        }
+        return state.currentTask;
+    }
+
+    function canRerollToday() {
+        const today = getTodayStr();
+        if (state.lastRerollDate !== today) {
+            state.dailyRerollCount = 0;
+            state.lastRerollDate = today;
+            saveToStorage();
+        }
+        return state.dailyRerollCount < 1;
+    }
+    function incrementRerollCount() {
+        if (!canRerollToday()) return false;
+        state.dailyRerollCount++;
+        saveToStorage();
+        return true;
+    }
+    function rerollCurrentTask() {
+        if (!state.currentTask) return false;
+        if (state.points < 1) return false;
+        if (!canRerollToday()) return false;
+        state.points -= 1;
+        incrementRerollCount();
+        const newTask = drawRandomTask();
+        state.currentTask = newTask;
+        saveToStorage();
+        return true;
+    }
+
+    function addCustomReward(name, price) {
+        const exists = state.customRewards.some(r => r.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (exists) return false;
+        state.customRewards.push({ id: Date.now(), name: name.trim(), price: parseInt(price) });
+        saveToStorage();
+        return true;
+    }
+    function deleteCustomReward(id) {
+        state.customRewards = state.customRewards.filter(r => r.id !== id);
+        saveToStorage();
+    }
+    function purchaseReward(reward) {
+        if (state.points < reward.price) return false;
+        state.points -= reward.price;
+        const record = {
+            id: Date.now(),
+            name: reward.name,
+            cost: reward.price,
+            timeStr: getFullDateTimeStr()
+        };
+        state.purchaseHistory.unshift(record);
+        if (state.purchaseHistory.length > 30) state.purchaseHistory.pop();
+        saveToStorage();
+        return true;
+    }
+    // 删除功能已完全移除，不再提供 deletePurchaseRecord
+
+    function getCurrentDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth()+1).padStart(2,'0');
+        const day = String(now.getDate()).padStart(2,'0');
+        const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+        return `${year}年${month}月${day}日 ${weekdays[now.getDay()]}`;
+    }
+
+    function drawEarthCanvas(canvas) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const size = canvas.width;
+        ctx.clearRect(0, 0, size, size);
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size/2-2, 0, Math.PI*2);
+        ctx.fillStyle = '#2a7f6e';
+        ctx.fill();
+        ctx.strokeStyle = '#c9b16b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#6baa6b';
+        ctx.beginPath();
+        ctx.ellipse(size*0.35, size*0.4, size*0.12, size*0.1, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(size*0.7, size*0.55, size*0.15, size*0.12, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(size*0.5, size*0.7, size*0.1, size*0.08, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.strokeStyle = '#fff8cfaa';
+        ctx.lineWidth = 0.8;
+        for(let i=0;i<3;i++) {
+            ctx.beginPath();
+            ctx.ellipse(size/2, size/2, size*0.3, size*0.1 + i*0.05, 0, 0, Math.PI*2);
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(size*0.2, size/2);
+        ctx.lineTo(size*0.8, size/2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(size/2, size*0.2);
+        ctx.lineTo(size/2, size*0.8);
+        ctx.stroke();
+    }
+
+    // ---------- 弹窗系统 ----------
+    function showModal(message) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-container">
+                    <div style="font-size:1.8rem;">✨</div>
+                    <div class="modal-message">${escapeHtml(message)}</div>
+                    <button class="modal-btn modal-btn-confirm" id="modalOkBtn">确 定</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.classList.add('active'), 10);
+            const close = () => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve();
+            };
+            overlay.querySelector('#modalOkBtn').addEventListener('click', close);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        });
+    }
+    function showConfirm(message) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-message">${escapeHtml(message)}</div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn modal-btn-cancel" id="confirmNo">取 消</button>
+                        <button class="modal-btn modal-btn-confirm" id="confirmYes">确 定</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.classList.add('active'), 10);
+            const cleanup = (result) => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve(result);
+            };
+            overlay.querySelector('#confirmYes').addEventListener('click', () => cleanup(true));
+            overlay.querySelector('#confirmNo').addEventListener('click', () => cleanup(false));
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(false); });
+        });
+    }
+    function showInputModal(title, placeholder) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-message">${escapeHtml(title)}</div>
+                    <input type="text" id="modalInput" class="modal-input" placeholder="${escapeHtml(placeholder)}" autocomplete="off">
+                    <div class="modal-buttons">
+                        <button class="modal-btn modal-btn-cancel" id="inputCancel">取 消</button>
+                        <button class="modal-btn modal-btn-confirm" id="inputConfirm">添 加</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.classList.add('active'), 10);
+            const input = overlay.querySelector('#modalInput');
+            input.focus();
+            const cleanup = (result) => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve(result);
+            };
+            overlay.querySelector('#inputConfirm').addEventListener('click', () => cleanup(input.value.trim()));
+            overlay.querySelector('#inputCancel').addEventListener('click', () => cleanup(null));
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(null); });
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') cleanup(input.value.trim()); });
+        });
+    }
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    window.alert = showModal;
+
+    // 购买记录弹窗（无删除功能）
+    async function showPurchaseHistoryModal() {
+        const history = [...state.purchaseHistory];
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            const rows = history.map(rec => `
+                <tr>
+                    <td>${escapeHtml(rec.name || "未知商品")}</td>
+                    <td style="text-align:center;">-${rec.cost}</td>
+                    <td style="text-align:center;">${escapeHtml(rec.timeStr || "未知时间")}</td>
+                </tr>
+            `).join('');
+            overlay.innerHTML = `
+                <div class="modal-container" style="max-width:650px;">
+                    <h3 style="color:#ffdc97; margin-bottom:12px;">📜 购买记录</h3>
+                    <div style="max-height:400px; overflow-y:auto;">
+                        <table class="history-table">
+                            <thead><tr><th>商品</th><th>消耗积分</th><th>时间</th></thead>
+                            <tbody id="historyTableBody">${rows || '<tr><td colspan="3" style="text-align:center;">暂无记录</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                    <div class="modal-buttons" style="margin-top:16px;">
+                        <button class="modal-btn modal-btn-confirm" id="closeHistoryBtn">关 闭</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.classList.add('active'), 10);
+            const close = () => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve();
+            };
+            overlay.querySelector('#closeHistoryBtn').addEventListener('click', close);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        });
+    }
+
+    // ---------- 视图渲染 ----------
+    const root = document.getElementById('appRoot');
+
+    function renderLogin() {
+        root.innerHTML = `
+            <div class="panel login-box">
+                <div class="header">
+                    <canvas id="earthCanvasLogin" class="earth-icon" width="48" height="48"></canvas>
+                    <h1>地球Online</h1>
+                </div>
+                <div style="margin:30px 0">
+                    <input type="text" id="loginUsername" class="input-field" placeholder="用户名">
+                    <input type="password" id="loginPassword" class="input-field" placeholder="密码">
+                    <button id="loginBtn" class="btn btn-primary" style="width:80%">登录游戏</button>
+                    <div id="loginError" class="error-msg" style="display:none">❌ 用户名或密码错误</div>
+                </div>
+                <footer>⚡ 唯一账号：admin / 123456</footer>
+            </div>
+        `;
+        const canvas = document.getElementById('earthCanvasLogin');
+        if (canvas) drawEarthCanvas(canvas);
+        const loginBtn = document.getElementById('loginBtn');
+        const userInput = document.getElementById('loginUsername');
+        const pwdInput = document.getElementById('loginPassword');
+        const errorDiv = document.getElementById('loginError');
+        const attempt = () => {
+            if (userInput.value.trim() === 'admin' && pwdInput.value.trim() === '123456') {
+                state.isLoggedIn = true;
+                renderMainDashboard();
+            } else {
+                errorDiv.style.display = 'block';
+                setTimeout(() => errorDiv.style.display = 'none', 1800);
+            }
+        };
+        loginBtn.addEventListener('click', attempt);
+        const keyHandler = (e) => { if (e.key === 'Enter') attempt(); };
+        userInput.addEventListener('keypress', keyHandler);
+        pwdInput.addEventListener('keypress', keyHandler);
+    }
+
+    function renderMainDashboard() {
+        window.currentView = 'main';
+        const dateStr = getCurrentDateString();
+        root.innerHTML = `
+            <div class="panel">
+                <div class="header">
+                    <canvas id="earthCanvasMain" class="earth-icon" width="48" height="48"></canvas>
+                    <h1>地球Online</h1>
+                </div>
+                <div class="date-area">📅 ${dateStr}</div>
+                <div class="score-area">
+                    <span class="score-label">✨ 当前积分 ✨</span>
+                    <span class="score-value" id="mainScoreDisplay">${state.points}</span>
+                </div>
+                <div class="score-area" style="margin-top:-10px;">
+                    <span class="score-label">🏆 总完成任务次数</span>
+                    <span class="score-value" style="font-size:1.5rem;">${state.totalTasksCompleted}</span>
+                </div>
+                <div class="button-group">
+                    <button id="drawTaskBtn" class="btn btn-primary">🎲 抽取任务</button>
+                    <button id="viewAchievementBtn" class="btn btn-primary">🏆 查看成就</button>
+                    <button id="marketBtn" class="btn btn-primary">🎁 积分商城</button>
+                </div>
+                <footer>⭐ 每日最多抽取2个任务，每日最多完成2个任务 | 未完成任务会一直保存</footer>
+            </div>
+        `;
+        const canvas = document.getElementById('earthCanvasMain');
+        if (canvas) drawEarthCanvas(canvas);
+        document.getElementById('drawTaskBtn').addEventListener('click', async () => {
+            if (state.currentTask) {
+                renderTaskView();
+                return;
+            }
+            if (!canDrawToday()) {
+                const reason = state.dailyDrawCount >= 2 ? "今日抽取次数已达上限（2次）" : "今日已完成2个任务，无法再抽取新任务";
+                await showModal(`⚠️ ${reason}，明天再来吧！`);
+                return;
+            }
+            const newTask = drawRandomTask();
+            if (newTask) {
+                state.currentTask = newTask;
+                incrementDrawCount();
+                saveToStorage();
+                renderTaskView();
+            } else {
+                await showModal("任务库暂时为空");
+            }
+        });
+        document.getElementById('viewAchievementBtn').addEventListener('click', () => renderAchievementView());
+        document.getElementById('marketBtn').addEventListener('click', () => renderMarketView());
+    }
+
+    function renderTaskView() {
+        window.currentView = 'task';
+        ensureCurrentTask();
+        const task = state.currentTask;
+        if (!task) {
+            renderMainDashboard();
+            return;
+        }
+        root.innerHTML = `
+            <div class="panel">
+                <div class="header"><h1>📋 任务面板</h1></div>
+                <div class="task-card">
+                    <div class="task-text">${escapeHtml(task.text)}</div>
+                    <div class="info-tip">⭐ 点击「已完成」领取积分+1，增加总任务次数，自动抽取新任务 ⭐</div>
+                </div>
+                <div class="button-group">
+                    <button id="goDoBtn" class="btn btn-warning">🚀 去完成</button>
+                    <button id="completeBtn" class="btn btn-success">✅ 已完成</button>
+                </div>
+                <div class="back-row"><button id="backBtn" class="btn btn-back">🏠 返回主界面</button></div>
+                <footer>💡 如果不想做这个任务，可去商城消耗1积分更换任务（每日限1次）</footer>
+            </div>
+        `;
+        let completing = false;
+        document.getElementById('goDoBtn').addEventListener('click', async () => {
+            await showModal("💪 行动力MAX！完成任务后记得点「已完成」领取奖励！");
+        });
+        const completeBtn = document.getElementById('completeBtn');
+        completeBtn.addEventListener('click', async () => {
+            if (completing) return;
+            completing = true;
+            completeBtn.disabled = true;
+            try {
+                const success = await completeCurrentTask();
+                if (!success) completeBtn.disabled = false;
+            } finally {
+                completing = false;
+            }
+        });
+        document.getElementById('backBtn').addEventListener('click', () => renderMainDashboard());
+    }
+
+    function renderAchievementView() {
+        window.currentView = 'achievement';
+        const effective = getEffectiveCompleted();
+        root.innerHTML = `
+            <div class="panel">
+                <div class="header"><h1>🏅 荣耀殿堂</h1><p>根据完成任务次数解锁（重置后需重新累计）</p></div>
+                <div class="achievement-list">
+                    ${ACHIEVEMENTS_DB.map(ach => {
+                        const unlocked = state.achievementsStatus[ach.id];
+                        return `
+                            <div class="achievement-item">
+                                <div class="achievement-info">
+                                    <div class="achievement-name">${escapeHtml(ach.name)}</div>
+                                    <div class="achievement-desc">${escapeHtml(ach.desc)} (需要完成 ${ach.need} 次)</div>
+                                </div>
+                                <div class="achievement-status ${unlocked ? 'completed' : ''}">${unlocked ? '✅ 已达成' : '🔒 未解锁'}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="button-group">
+                    <button id="resetDailyQuotaBtn" class="btn btn-warning">🔄 重置每日任务额度</button>
+                    <button id="resetAchieveFreeBtn" class="btn btn-danger">🗑️ 重置成就（不自动重亮）</button>
+                </div>
+                <div class="back-row"><button id="backBtn" class="btn btn-back">🏠 返回主界面</button></div>
+                <footer>重置每日额度：刷新当天的抽取次数和完成次数，让你重新获得2次机会。</footer>
+            </div>
+        `;
+        document.getElementById('resetDailyQuotaBtn').addEventListener('click', async () => {
+            if (await showConfirm("确定要重置今天的任务额度吗？你将重新获得2次抽取和2次完成的机会。")) {
+                resetDailyQuota();
+                await showModal("✅ 每日任务额度已重置！现在可以重新抽取并完成最多2个任务。");
+                renderAchievementView();
+            }
+        });
+        document.getElementById('resetAchieveFreeBtn').addEventListener('click', async () => {
+            if (await showConfirm("⚠️ 重置成就将使所有成就变为未解锁，并且不会根据已有总次数自动重亮，必须继续完成任务来重新达成。确定吗？")) {
+                resetAchievementsFree();
+                await showModal("✅ 成就已重置！所有成就变为灰色，继续完成任务可以重新点亮它们。");
+                renderAchievementView();
+            }
+        });
+        document.getElementById('backBtn').addEventListener('click', () => renderMainDashboard());
+    }
+
+    async function renderMarketView() {
+        window.currentView = 'market';
+        function renderHTML() {
+            const rewardsHtml = state.customRewards.map(r => `
+                <div class="market-item">
+                    <div class="market-info">
+                        <div class="market-title">${escapeHtml(r.name)}</div>
+                        <div class="market-cost">💎 价格: ${r.price} 积分</div>
+                    </div>
+                    <div>
+                        <button class="market-btn buy-reward" data-id="${r.id}">🎁 购买</button>
+                        <button class="market-btn market-btn-del del-reward" data-id="${r.id}">🗑️ 删除</button>
+                    </div>
+                </div>
+            `).join('');
+            return `
+                <div class="panel">
+                    <div class="header"><h1>🎁 积分商城</h1></div>
+                    <div class="score-area">
+                        <span class="score-label">💰 我的积分</span>
+                        <span class="score-value" id="marketPoints">${state.points}</span>
+                    </div>
+                    <div class="market-header">
+                        <div></div>
+                        <button id="showHistoryBtn" class="btn-small">📜 购买记录</button>
+                    </div>
+                    <div class="market-item">
+                        <div class="market-info">
+                            <div class="market-title">🔄 更换当前任务</div>
+                            <div class="market-desc">消耗1积分，重新抽取一个任务（每日限1次，不占用每天的任务额度）</div>
+                            <div class="market-cost">💎 1 积分</div>
+                        </div>
+                        <button id="rerollTaskBtn" class="market-btn">🔄 立即更换</button>
+                    </div>
+                    <hr>
+                    <h3 style="color:#ffdc97; margin:12px 0;">🎉 自定义奖励</h3>
+                    <div id="customRewardsList">${rewardsHtml || '<div style="color:#aaa; text-align:center;">暂无自定义奖励，点击下方按钮添加~</div>'}</div>
+                    <button id="addRewardBtn" class="btn add-reward-btn">➕ 添加自定义奖励</button>
+                    <div class="back-row"><button id="backBtn" class="btn btn-back">🏠 返回主界面</button></div>
+                </div>
+            `;
+        }
+        function bindEvents() {
+            document.getElementById('showHistoryBtn')?.addEventListener('click', () => {
+                showPurchaseHistoryModal();
+            });
+            document.getElementById('rerollTaskBtn')?.addEventListener('click', async () => {
+                if (!state.currentTask) {
+                    await showModal("还没有抽取任务，快去主界面抽取任务吧！");
+                    return;
+                }
+                if (state.points < 1) {
+                    await showModal("积分不足1，无法更换任务。");
+                    return;
+                }
+                if (!canRerollToday()) {
+                    await showModal("今日更换次数已达上限（1次），明天再来吧！");
+                    return;
+                }
+                if (await showConfirm(`确定消耗1积分更换当前任务吗？\n原任务“${state.currentTask.text}”将不会被完成，且不占用每天的任务额度。`)) {
+                    const success = rerollCurrentTask();
+                    if (success) {
+                        await showModal(`已更换为新任务：\n“${state.currentTask.text}”\n消耗1积分，剩余积分 ${state.points}。`);
+                        renderMarketView();
+                    } else {
+                        await showModal("更换失败，可能积分不足或系统错误。");
+                    }
+                }
+            });
+            document.querySelectorAll('.buy-reward').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    const reward = state.customRewards.find(r => r.id === id);
+                    if (!reward) return;
+                    if (state.points < reward.price) {
+                        await showModal(`积分不足！需要 ${reward.price} 积分。`);
+                        return;
+                    }
+                    if (await showConfirm(`购买「${reward.name}」消耗 ${reward.price} 积分吗？`)) {
+                        const success = purchaseReward(reward);
+                        if (success) {
+                            await showModal(`🎉 恭喜！你奖励了自己「${reward.name}」！\n\n${ENCOURAGE_DB[Math.floor(Math.random() * ENCOURAGE_DB.length)]}\n剩余积分: ${state.points}`);
+                            renderMarketView();
+                        } else {
+                            await showModal("购买失败，积分不足");
+                        }
+                    }
+                });
+            });
+            document.querySelectorAll('.del-reward').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    const reward = state.customRewards.find(r => r.id === id);
+                    if (reward && await showConfirm(`删除奖励「${reward.name}」吗？`)) {
+                        deleteCustomReward(id);
+                        renderMarketView();
+                    }
+                });
+            });
+            document.getElementById('addRewardBtn')?.addEventListener('click', async () => {
+                const name = await showInputModal("奖励名称", "例如：奖励自己一杯奶茶");
+                if (!name) return;
+                const priceStr = await showInputModal("消耗积分", "请输入正整数（如 5）");
+                if (!priceStr) return;
+                const price = parseInt(priceStr);
+                if (isNaN(price) || price <= 0) {
+                    await showModal("积分必须是正整数！");
+                    return;
+                }
+                const added = addCustomReward(name, price);
+                if (!added) {
+                    await showModal(`❌ 奖励“${name}”已存在，不能重复添加！`);
+                } else {
+                    await showModal(`✅ 已添加奖励「${name}」，价格 ${price} 积分`);
+                }
+                renderMarketView();
+            });
+            document.getElementById('backBtn')?.addEventListener('click', () => renderMainDashboard());
+        }
+        root.innerHTML = renderHTML();
+        bindEvents();
+    }
+
+    function init() {
+        loadFromStorage();
+        let needUpdate = false;
+        const effective = getEffectiveCompleted();
+        for (let ach of ACHIEVEMENTS_DB) {
+            if (!state.achievementsStatus[ach.id] && effective >= ach.need) {
+                state.achievementsStatus[ach.id] = true;
+                needUpdate = true;
+            } else if (state.achievementsStatus[ach.id] && effective < ach.need) {
+                state.achievementsStatus[ach.id] = false;
+                needUpdate = true;
+            }
+        }
+        if (needUpdate) saveToStorage();
+        renderLogin();
+    }
+    init();
+</script>
+</body>
+</html>
